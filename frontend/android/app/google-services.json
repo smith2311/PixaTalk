@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "532595099404",
+    "project_id": "pixatalk-68492",
+    "storage_bucket": "pixatalk-68492.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:532595099404:android:556d15870c0350d31fab29",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "532595099404-hnok9kdgmckk423pl9fo3j2qr6ga0n2s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.frontend",
+            "certificate_hash": "fc9312ead6c29c45334f84a5ab7bc7176cfe80fc"
+          }
+        },
+        {
+          "client_id": "532595099404-gp12lbtqpv18mb5eustqp74hfdetmj6m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNKki6Bb6sT56bQ_RuDFcHil3PIiTjzNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "532595099404-gp12lbtqpv18mb5eustqp74hfdetmj6m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "532595099404-9ks22p4p7pu089nbmc6442g7n73e30tc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.frontend"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
