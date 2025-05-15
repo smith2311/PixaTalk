@@ -1,4 +1,7 @@
+// chat_screen.dart
+
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -10,7 +13,6 @@ import '../models/message.dart';
 import '../widgets/message_card.dart';
 import '../screens/view_profile_screen.dart';
 
-/// Chat Screen where users send and receive messages
 class ChatScreen extends StatefulWidget {
   final ChatUser user;
   const ChatScreen({super.key, required this.user});
@@ -41,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  /// Listens for user activity and updates UI accordingly
   void _listenToUserStatus() {
     _userInfoSub = APIs.getUserInfo(widget.user).listen((snapshot) {
       final data = snapshot.docs;
@@ -51,64 +52,57 @@ class _ChatScreenState extends State<ChatScreen> {
         final lastActive = userMap['last_active'] ?? '';
 
         setState(() {
-          _lastActiveStatus =
-          isOnline ? 'Online' : 'Last active: ${_formatTimestamp(lastActive)}';
+          _lastActiveStatus = isOnline
+              ? 'Online'
+              : 'Last active: ${_formatTimestamp(lastActive)}';
         });
       }
     });
   }
 
-  /// Converts timestamp to human-readable HH:MM format
   String _formatTimestamp(String timestamp) {
-    final time = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
+    if (timestamp.isEmpty) return 'Unavailable';
+    final time = DateTime.fromMillisecondsSinceEpoch(int.tryParse(timestamp) ?? 0);
     return '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
   }
 
-  /// Toggles emoji picker visibility
   void _toggleEmojiPicker() {
     setState(() {
       _showEmojiPicker = !_showEmojiPicker;
     });
   }
 
-  /// Appends selected emoji to the text input field
-  void onEmojiSelected(Emoji emoji) {
-    _textController.text += emoji.emoji;
-  }
-
-  /// Sends a text message to Firestore
-  void _sendMessage() async {
+  Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
     await APIs.sendMessage(widget.user, text, Type.text);
     _textController.clear();
   }
 
-  /// Picks an image from the specified source (gallery or camera)
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
-      _uploadImage(pickedFile);
+      await _uploadImage(File(pickedFile.path));
     }
   }
 
-  /// Simulated image upload with UI updates
-  Future<void> _uploadImage(XFile pickedFile) async {
+  Future<void> _uploadImage(File imageFile) async {
     setState(() {
       _isUploadingImage = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isUploadingImage = false;
-    });
-
-    //log("Uploaded Image: ${pickedFile.path}");
-
+    try {
+      // Actual upload & send image message
+      await APIs.sendImageMessage(widget.user, imageFile);
+    } catch (e) {
+      // handle error if needed
+    } finally {
+      setState(() {
+        _isUploadingImage = false;
+      });
+    }
   }
 
-  /// Navigates to the profile screen when tapped
   void _navigateToProfile() {
     Navigator.push(
       context,
@@ -154,9 +148,9 @@ class _ChatScreenState extends State<ChatScreen> {
         body: Column(
           children: [
             Expanded(
-              child: StreamBuilder(
+              child: StreamBuilder<QuerySnapshot>(
                 stream: APIs.getMessagesStream(widget.user.id),
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -166,7 +160,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     return MessageCard(message: message);
                   }).toList();
 
-                  return ListView(reverse: true, children: messages);
+                  return ListView(
+                    reverse: true,
+                    children: messages,
+                  );
                 },
               ),
             ),
@@ -177,7 +174,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  /// Builds the bottom message input field
   Widget _buildInputField(Size mq) {
     return SafeArea(
       child: Column(
@@ -249,7 +245,6 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ),
-          // Emoji Picker - Appears when _showEmojiPicker is true
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             height: _showEmojiPicker ? mq.height * 0.28 : 0,
@@ -257,7 +252,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ? EmojiPicker(
               config: Config(),
               onEmojiSelected: (category, emoji) {
-                _textController.text += emoji.emoji; // Directly append emoji here
+                _textController.text += emoji.emoji;
               },
             )
                 : const SizedBox(),

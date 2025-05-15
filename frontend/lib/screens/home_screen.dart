@@ -27,26 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
     // Fetch self info on screen initialization
     APIs.getSelfInfo();
 
-    // Set user status as active
-    APIs.updateActiveStatus(true);
-
     // Monitor app lifecycle (app goes to background/foreground)
-    if(APIs.auth.currentUser != null){
-      // Set message handler for app lifecycle changes
+    if (APIs.auth.currentUser != null) {
       SystemChannels.lifecycle.setMessageHandler((message) async {
         if (message.toString().contains('resume')) {
-          // Update active status when app is resumed
           APIs.updateActiveStatus(true);
         }
         if (message.toString().contains('pause')) {
-          // Update active status when app is paused
           APIs.updateActiveStatus(false);
         }
         return Future.value(message);
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -73,9 +66,11 @@ class _HomeScreenState extends State<HomeScreen> {
               onChanged: (val) {
                 _searchList.clear();
                 _searchList.addAll(
-                  _list.where((user) =>
-                  user.name.toLowerCase().contains(val.toLowerCase()) ||
-                      user.email.toLowerCase().contains(val.toLowerCase())),
+                  _list.where(
+                        (user) =>
+                    user.name.toLowerCase().contains(val.toLowerCase()) ||
+                        user.email.toLowerCase().contains(val.toLowerCase()),
+                  ),
                 );
                 setState(() {});
               },
@@ -83,8 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 : const Text('PixaTalk'),
             actions: [
               IconButton(
-                icon: Icon(
-                    _isSearching ? CupertinoIcons.clear_circled_solid : Icons.search),
+                icon: Icon(_isSearching
+                    ? CupertinoIcons.clear_circled_solid
+                    : Icons.search),
                 onPressed: () {
                   setState(() => _isSearching = !_isSearching);
                 },
@@ -117,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           body: StreamBuilder(
-            stream: APIs.getAllUsers(),
+            stream: APIs.getAllUsersStream(),
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
@@ -129,22 +125,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 case ConnectionState.active:
                 case ConnectionState.done:
                   final data = snapshot.data?.docs;
+                  // Map users and exclude current user by filtering
                   final users = data
                       ?.map((e) => ChatUser.fromJson(e.data()))
+                      .where((user) => user.id != APIs.me.id)
                       .toList() ??
                       [];
                   _list = users;
 
                   if (_list.isNotEmpty) {
                     return ListView.builder(
-                      itemCount:
-                      _isSearching ? _searchList.length : _list.length,
+                      itemCount: _isSearching ? _searchList.length : _list.length,
                       padding: EdgeInsets.only(top: mq.height * 0.01),
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
-                        final user = _isSearching
-                            ? _searchList[index]
-                            : _list[index];
+                        final user = _isSearching ? _searchList[index] : _list[index];
                         return ChatUserCard(user: user);
                       },
                     );
