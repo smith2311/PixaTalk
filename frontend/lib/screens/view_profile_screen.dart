@@ -37,6 +37,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             child: Column(
               children: [
                 SizedBox(width: mq.width, height: mq.height * .04),
+
                 ClipRRect(
                   borderRadius: BorderRadius.circular(mq.height * .1),
                   child: CachedNetworkImage(
@@ -48,7 +49,9 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                     const CircleAvatar(child: Icon(CupertinoIcons.person)),
                   ),
                 ),
+
                 SizedBox(height: mq.height * .04),
+
                 Text(
                   widget.user.email,
                   style: const TextStyle(color: Colors.black87, fontSize: 16),
@@ -60,10 +63,8 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                   children: [
                     Text('About: ', style: TextStyle(color: Colors.black87, fontSize: 16),),
                     Text(widget.user.about, style: TextStyle(color: Colors.black54, fontSize: 16)
-                    ),
-                  ],
-                ),
-              ],
+                    ),],
+                ),],
             ),
           ),
         ),
